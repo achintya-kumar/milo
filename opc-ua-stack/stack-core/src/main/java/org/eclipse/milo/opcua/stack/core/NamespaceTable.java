@@ -30,6 +30,10 @@ public class NamespaceTable {
         uriTable.put(ushort(0), Namespaces.OPC_UA);
     }
 
+    public int size() {
+        return uriTable.size();
+    }
+
     /**
      * Add a URI to the NamespaceTable and return the index.
      * <p>
