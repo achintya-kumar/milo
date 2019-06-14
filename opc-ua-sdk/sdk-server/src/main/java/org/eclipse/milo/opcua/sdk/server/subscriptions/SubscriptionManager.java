@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -222,11 +221,27 @@ public class SubscriptionManager {
                  * Notify AddressSpaces of the items we just deleted.
                  */
 
-                byMonitoredItemType(
-                    deletedItems,
-                    dataItems -> server.getAddressSpaceManager().onDataItemsDeleted(dataItems),
-                    eventItems -> server.getAddressSpaceManager().onEventItemsDeleted(eventItems)
-                );
+                List<DataItem> dataItems = Lists.newArrayList();
+                List<EventItem> eventItems = Lists.newArrayList();
+
+                for (BaseMonitoredItem<?> item : deletedItems) {
+                    if (item instanceof MonitoredDataItem) {
+                        dataItems.add((DataItem) item);
+                    } else if (item instanceof MonitoredEventItem) {
+                        eventItems.add((EventItem) item);
+                    }
+                }
+
+                try {
+                    if (!dataItems.isEmpty()) {
+                        server.getAddressSpaceManager().onDataItemsDeleted(dataItems);
+                    }
+                    if (!eventItems.isEmpty()) {
+                        server.getAddressSpaceManager().onEventItemsDeleted(eventItems);
+                    }
+                } catch (Throwable t) {
+                    logger.error("Unexpected error notifying AddressSpace of MonitoredItems being deleted.", t);
+                }
 
                 results[i] = StatusCode.GOOD;
             } else {
@@ -344,11 +359,27 @@ public class SubscriptionManager {
 
             // Notify AddressSpaces of the items we just created.
 
-            byMonitoredItemType(
-                monitoredItems,
-                dataItems -> server.getAddressSpaceManager().onDataItemsCreated(dataItems),
-                eventItems -> server.getAddressSpaceManager().onEventItemsCreated(eventItems)
-            );
+            List<DataItem> dataItems = Lists.newArrayList();
+            List<EventItem> eventItems = Lists.newArrayList();
+
+            for (BaseMonitoredItem<?> item : monitoredItems) {
+                if (item instanceof MonitoredDataItem) {
+                    dataItems.add((DataItem) item);
+                } else if (item instanceof MonitoredEventItem) {
+                    eventItems.add((EventItem) item);
+                }
+            }
+
+            try {
+                if (!dataItems.isEmpty()) {
+                    server.getAddressSpaceManager().onDataItemsCreated(dataItems);
+                }
+                if (!eventItems.isEmpty()) {
+                    server.getAddressSpaceManager().onEventItemsCreated(eventItems);
+                }
+            } catch (Throwable t) {
+                logger.error("Unexpected error notifying AddressSpace of MonitoredItems being created.", t);
+            }
 
             ResponseHeader header = service.createResponseHeader();
 
@@ -573,11 +604,27 @@ public class SubscriptionManager {
              * Notify AddressSpaces of the items we just modified.
              */
 
-            byMonitoredItemType(
-                monitoredItems,
-                dataItems -> server.getAddressSpaceManager().onDataItemsModified(dataItems),
-                eventItems -> server.getAddressSpaceManager().onEventItemsModified(eventItems)
-            );
+            List<DataItem> dataItems = Lists.newArrayList();
+            List<EventItem> eventItems = Lists.newArrayList();
+
+            for (BaseMonitoredItem<?> item : monitoredItems) {
+                if (item instanceof MonitoredDataItem) {
+                    dataItems.add((DataItem) item);
+                } else if (item instanceof MonitoredEventItem) {
+                    eventItems.add((EventItem) item);
+                }
+            }
+
+            try {
+                if (!dataItems.isEmpty()) {
+                    server.getAddressSpaceManager().onDataItemsModified(dataItems);
+                }
+                if (!eventItems.isEmpty()) {
+                    server.getAddressSpaceManager().onEventItemsModified(eventItems);
+                }
+            } catch (Throwable t) {
+                logger.error("Unexpected error notifying AddressSpace of MonitoredItems being modified.", t);
+            }
 
             /*
              * AddressSpaces have been notified; send response.
@@ -795,11 +842,27 @@ public class SubscriptionManager {
          * Notify AddressSpaces of the items that have been deleted.
          */
 
-        byMonitoredItemType(
-            deletedItems,
-            dataItems -> server.getAddressSpaceManager().onDataItemsDeleted(dataItems),
-            eventItems -> server.getAddressSpaceManager().onEventItemsDeleted(eventItems)
-        );
+        List<DataItem> dataItems = Lists.newArrayList();
+        List<EventItem> eventItems = Lists.newArrayList();
+
+        for (BaseMonitoredItem<?> item : deletedItems) {
+            if (item instanceof MonitoredDataItem) {
+                dataItems.add((DataItem) item);
+            } else if (item instanceof MonitoredEventItem) {
+                eventItems.add((EventItem) item);
+            }
+        }
+
+        try {
+            if (!dataItems.isEmpty()) {
+                server.getAddressSpaceManager().onDataItemsDeleted(dataItems);
+            }
+            if (!eventItems.isEmpty()) {
+                server.getAddressSpaceManager().onEventItemsDeleted(eventItems);
+            }
+        } catch (Throwable t) {
+            logger.error("Unexpected error notifying AddressSpace of MonitoredItems being deleted.", t);
+        }
 
         /*
          * Build and return results.
@@ -1026,18 +1089,6 @@ public class SubscriptionManager {
 
             if (deleteSubscriptions) {
                 server.getSubscriptions().remove(s.getId());
-
-                List<BaseMonitoredItem<?>> deletedItems = s.deleteSubscription();
-
-                /*
-                 * Notify AddressSpaces the items for this subscription are deleted.
-                 */
-
-                byMonitoredItemType(
-                    deletedItems,
-                    dataItems -> server.getAddressSpaceManager().onDataItemsDeleted(dataItems),
-                    eventItems -> server.getAddressSpaceManager().onEventItemsDeleted(eventItems)
-                );
             }
 
             iterator.remove();
@@ -1072,50 +1123,6 @@ public class SubscriptionManager {
             subscription.returnStatusChangeNotification(service);
         } else {
             transferred.add(subscription);
-        }
-    }
-
-    /**
-     * Split {@code monitoredItems} into a list of {@link DataItem}s and a list of {@link EventItem}s and invoke the
-     * corresponding {@link Consumer} for each list if non-empty.
-     *
-     * @param monitoredItems    the list of MonitoredItems to group.
-     * @param dataItemConsumer  a {@link Consumer} that accepts a non-empty list of {@link DataItem}s.
-     * @param eventItemConsumer a {@link Consumer} that accepts a non-empty list of {@link EventItem}s.
-     */
-    private static void byMonitoredItemType(
-        List<BaseMonitoredItem<?>> monitoredItems,
-        Consumer<List<DataItem>> dataItemConsumer,
-        Consumer<List<EventItem>> eventItemConsumer
-    ) {
-
-        List<DataItem> dataItems = Lists.newArrayList();
-        List<EventItem> eventItems = Lists.newArrayList();
-
-        for (BaseMonitoredItem<?> item : monitoredItems) {
-            if (item instanceof MonitoredDataItem) {
-                dataItems.add((DataItem) item);
-            } else if (item instanceof MonitoredEventItem) {
-                eventItems.add((EventItem) item);
-            }
-        }
-
-        try {
-            if (!dataItems.isEmpty()) {
-                dataItemConsumer.accept(dataItems);
-            }
-        } catch (Throwable t) {
-            LoggerFactory.getLogger(SubscriptionManager.class)
-                .error("Uncaught Throwable in dataItemConsumer", t);
-        }
-
-        try {
-            if (!eventItems.isEmpty()) {
-                eventItemConsumer.accept(eventItems);
-            }
-        } catch (Throwable t) {
-            LoggerFactory.getLogger(SubscriptionManager.class)
-                .error("Uncaught Throwable in eventItemConsumer", t);
         }
     }
 

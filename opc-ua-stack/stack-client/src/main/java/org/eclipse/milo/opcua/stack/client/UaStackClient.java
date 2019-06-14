@@ -13,7 +13,6 @@ package org.eclipse.milo.opcua.stack.client;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 
 import com.google.common.collect.Maps;
 import org.eclipse.milo.opcua.stack.client.transport.UaTransport;
@@ -221,7 +220,11 @@ public class UaStackClient {
         transport.sendRequest(request).whenComplete((response, ex) -> {
             pending.remove(requestHandle);
 
-            deliverResponse(request, response, ex, future);
+            if (response != null) {
+                deliverResponse(request, response, future);
+            } else {
+                future.completeExceptionally(ex);
+            }
         });
 
         return future;
@@ -240,51 +243,33 @@ public class UaStackClient {
      */
     private void deliverResponse(
         UaRequestMessage request,
-        @Nullable UaResponseMessage response,
-        @Nullable Throwable failure,
-        CompletableFuture<UaResponseMessage> future
-    ) {
+        UaResponseMessage response,
+        CompletableFuture<UaResponseMessage> future) {
+
+        ResponseHeader header = response.getResponseHeader();
+        UInteger requestHandle = header.getRequestHandle();
 
         deliveryQueue.submit(() -> {
-            if (response != null) {
-                ResponseHeader header = response.getResponseHeader();
-                UInteger requestHandle = header.getRequestHandle();
-
-                if (header.getServiceResult().isGood()) {
-                    future.complete(response);
-                } else {
-                    ServiceFault serviceFault;
-
-                    if (response instanceof ServiceFault) {
-                        serviceFault = (ServiceFault) response;
-                    } else {
-                        serviceFault = new ServiceFault(header);
-                    }
-
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(
-                            "Received ServiceFault request={} requestHandle={}, result={}",
-                            request.getClass().getSimpleName(),
-                            requestHandle,
-                            header.getServiceResult()
-                        );
-                    }
-
-                    future.completeExceptionally(new UaServiceFaultException(serviceFault));
-                }
+            if (header.getServiceResult().isGood()) {
+                future.complete(response);
             } else {
-                assert failure != null;
+                ServiceFault serviceFault;
+
+                if (response instanceof ServiceFault) {
+                    serviceFault = (ServiceFault) response;
+                } else {
+                    serviceFault = new ServiceFault(header);
+                }
 
                 if (logger.isDebugEnabled()) {
                     logger.debug(
-                        "sendRequest() failed, request={}, requestHandle={}",
+                        "Received ServiceFault request={} requestHandle={}, result={}",
                         request.getClass().getSimpleName(),
-                        request.getRequestHeader().getRequestHandle(),
-                        failure
-                    );
+                        requestHandle,
+                        header.getServiceResult());
                 }
 
-                future.completeExceptionally(failure);
+                future.completeExceptionally(new UaServiceFaultException(serviceFault));
             }
         });
     }

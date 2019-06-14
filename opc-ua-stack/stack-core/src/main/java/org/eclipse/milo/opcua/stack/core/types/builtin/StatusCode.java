@@ -109,7 +109,7 @@ public final class StatusCode {
         return helper.toString();
     }
 
-    private static String quality(StatusCode statusCode) {
+    public static String quality(StatusCode statusCode) {
         if (statusCode.isGood()) {
             return "good";
         } else if (statusCode.isBad()) {

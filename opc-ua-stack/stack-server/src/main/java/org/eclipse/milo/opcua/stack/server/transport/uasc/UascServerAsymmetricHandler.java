@@ -110,38 +110,36 @@ public class UascServerAsymmetricHandler extends ByteToMessageDecoder implements
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) throws Exception {
-        if (buffer.readableBytes() >= HEADER_LENGTH) {
+        while (buffer.readableBytes() >= HEADER_LENGTH) {
             int messageLength = getMessageLength(buffer, maxChunkSize);
 
-            if (buffer.readableBytes() >= messageLength) {
-                MessageType messageType = MessageType.fromMediumInt(
-                    buffer.getMediumLE(buffer.readerIndex())
-                );
+            if (buffer.readableBytes() < messageLength) {
+                break;
+            }
 
-                switch (messageType) {
-                    case OpenSecureChannel:
-                        onOpenSecureChannel(ctx, buffer.readSlice(messageLength));
-                        break;
+            MessageType messageType = MessageType.fromMediumInt(buffer.getMediumLE(buffer.readerIndex()));
 
-                    case CloseSecureChannel:
-                        logger.debug("Received CloseSecureChannelRequest");
+            switch (messageType) {
+                case OpenSecureChannel:
+                    onOpenSecureChannel(ctx, buffer.readSlice(messageLength));
+                    break;
 
-                        buffer.skipBytes(messageLength);
+                case CloseSecureChannel:
+                    logger.debug("Received CloseSecureChannelRequest");
 
-                        if (secureChannelTimeout != null) {
-                            secureChannelTimeout.cancel();
-                            secureChannelTimeout = null;
-                        }
+                    buffer.skipBytes(messageLength);
 
-                        ctx.close();
-                        break;
+                    if (secureChannelTimeout != null) {
+                        secureChannelTimeout.cancel();
+                        secureChannelTimeout = null;
+                    }
 
-                    default:
-                        throw new UaException(
-                            StatusCodes.Bad_TcpMessageTypeInvalid,
-                            "unexpected MessageType: " + messageType
-                        );
-                }
+                    ctx.close();
+                    break;
+
+                default:
+                    throw new UaException(StatusCodes.Bad_TcpMessageTypeInvalid,
+                        "unexpected MessageType: " + messageType);
             }
         }
     }

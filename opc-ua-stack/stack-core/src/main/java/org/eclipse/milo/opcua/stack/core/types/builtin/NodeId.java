@@ -141,7 +141,7 @@ public final class NodeId {
         this.identifier = identifier;
     }
 
-    NodeId(@Nonnull UShort namespaceIndex, @Nonnull Object identifier) {
+    public NodeId(@Nonnull UShort namespaceIndex, @Nonnull Object identifier) {
         checkNotNull(namespaceIndex);
         checkNotNull(identifier);
 

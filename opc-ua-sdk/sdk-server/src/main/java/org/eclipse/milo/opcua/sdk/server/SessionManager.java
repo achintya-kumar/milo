@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
@@ -39,14 +37,11 @@ import org.eclipse.milo.opcua.stack.core.security.SecurityAlgorithm;
 import org.eclipse.milo.opcua.stack.core.security.SecurityPolicy;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DiagnosticInfo;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.MessageSecurityMode;
-import org.eclipse.milo.opcua.stack.core.types.enumerated.UserTokenType;
 import org.eclipse.milo.opcua.stack.core.types.structured.ActivateSessionRequest;
 import org.eclipse.milo.opcua.stack.core.types.structured.ActivateSessionResponse;
-import org.eclipse.milo.opcua.stack.core.types.structured.AnonymousIdentityToken;
 import org.eclipse.milo.opcua.stack.core.types.structured.CreateSessionRequest;
 import org.eclipse.milo.opcua.stack.core.types.structured.CreateSessionResponse;
 import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription;
@@ -387,14 +382,13 @@ public class SessionManager implements
                     /*
                      * Identity change
                      */
-                    UserIdentityToken identityToken = decodeIdentityToken(
-                        request.getUserIdentityToken(),
-                        session.getEndpoint().getUserIdentityTokens()
+                    Object tokenObject = request.getUserIdentityToken().decode(
+                        server.getSerializationContext()
                     );
 
                     Object identityObject = validateIdentityToken(
                         session,
-                        identityToken,
+                        tokenObject,
                         request.getUserTokenSignature()
                     );
 
@@ -422,14 +416,19 @@ public class SessionManager implements
                      */
                     ByteString clientCertificateBytes = serviceRequest.getClientCertificateBytes();
 
-                    UserIdentityToken identityToken = decodeIdentityToken(
-                        request.getUserIdentityToken(),
-                        session.getEndpoint().getUserIdentityTokens()
+                    if (request.getUserIdentityToken() == null ||
+                        request.getUserIdentityToken().decode(server.getSerializationContext()) == null) {
+
+                        throw new UaException(StatusCodes.Bad_IdentityTokenInvalid, "identity token not provided");
+                    }
+
+                    Object tokenObject = request.getUserIdentityToken().decode(
+                        server.getSerializationContext()
                     );
 
                     Object identityObject = validateIdentityToken(
                         session,
-                        identityToken,
+                        tokenObject,
                         request.getUserTokenSignature()
                     );
 
@@ -483,16 +482,21 @@ public class SessionManager implements
                 throw new UaException(StatusCodes.Bad_SecurityChecksFailed);
             }
 
+            if (request.getUserIdentityToken() == null ||
+                request.getUserIdentityToken().decode(server.getSerializationContext()) == null) {
+
+                throw new UaException(StatusCodes.Bad_IdentityTokenInvalid, "identity token not provided");
+            }
+
             verifyClientSignature(session, request);
 
-            UserIdentityToken identityToken = decodeIdentityToken(
-                request.getUserIdentityToken(),
-                session.getEndpoint().getUserIdentityTokens()
+            Object tokenObject = request.getUserIdentityToken().decode(
+                server.getSerializationContext()
             );
 
             Object identityObject = validateIdentityToken(
                 session,
-                identityToken,
+                tokenObject,
                 request.getUserTokenSignature()
             );
 
@@ -540,40 +544,6 @@ public class SessionManager implements
                 signatureBytes
             );
         }
-    }
-
-    /**
-     * Decode a {@link UserIdentityToken}.
-     * <p>
-     * Null or empty tokens are interpreted as {@link AnonymousIdentityToken}, as per the spec.
-     *
-     * @param identityTokenXo the {@link ExtensionObject} to decode.
-     * @param tokenPolicies   the {@link UserTokenPolicy}s from the Session's Endpoint.
-     * @return a {@link UserIdentityToken} object.
-     */
-    @Nonnull
-    private UserIdentityToken decodeIdentityToken(
-        @Nullable ExtensionObject identityTokenXo,
-        @Nullable UserTokenPolicy[] tokenPolicies
-    ) {
-
-        if (identityTokenXo != null && !identityTokenXo.isNull()) {
-            Object identityToken = identityTokenXo.decodeOrNull(
-                server.getSerializationContext()
-            );
-
-            if (identityToken instanceof UserIdentityToken) {
-                return (UserIdentityToken) identityToken;
-            }
-        }
-
-        String policyId = l(tokenPolicies).stream()
-            .filter(p -> p.getTokenType() == UserTokenType.Anonymous)
-            .findFirst()
-            .map(UserTokenPolicy::getPolicyId)
-            .orElse(null);
-
-        return new AnonymousIdentityToken(policyId);
     }
 
     private Object validateIdentityToken(

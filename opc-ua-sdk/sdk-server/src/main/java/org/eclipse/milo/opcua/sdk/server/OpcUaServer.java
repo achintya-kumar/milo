@@ -90,7 +90,7 @@ public class OpcUaServer {
     private final UaStackServer stackServer;
 
     private final OpcUaNamespace opcUaNamespace;
-    private final ServerNamespace serverNamespace;
+//    private final ServerNamespace serverNamespace;
 
     private final OpcUaServerConfig config;
 
@@ -122,8 +122,8 @@ public class OpcUaServer {
         opcUaNamespace = new OpcUaNamespace(this);
         opcUaNamespace.startup();
 
-        serverNamespace = new ServerNamespace(this);
-        serverNamespace.startup();
+//        serverNamespace = new ServerNamespace(this);
+//        serverNamespace.startup();
 
         serverTable.addUri(stackServer.getConfig().getApplicationUri());
 
@@ -169,9 +169,9 @@ public class OpcUaServer {
         return opcUaNamespace;
     }
 
-    public ServerNamespace getServerNamespace() {
-        return serverNamespace;
-    }
+//    public ServerNamespace getServerNamespace() {
+//        return serverNamespace;
+//    }
 
     public ServerTable getServerTable() {
         return serverTable;
