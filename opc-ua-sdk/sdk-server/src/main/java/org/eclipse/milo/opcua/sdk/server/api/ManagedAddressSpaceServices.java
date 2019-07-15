@@ -178,12 +178,12 @@ public abstract class ManagedAddressSpaceServices extends AbstractLifecycle impl
                     readValueId.getDataEncoding()
                 );
 
-                logger.debug("Read value {} from attribute {} of {}",
-                    value.getValue().getValue(),
-                    AttributeId.from(readValueId.getAttributeId())
-                        .map(Object::toString).orElse("unknown"),
-                    node.getNodeId()
-                );
+//                logger.debug("Read value {} from attribute {} of {}",
+//                    value.getValue().getValue(),
+//                    AttributeId.from(readValueId.getAttributeId())
+//                        .map(Object::toString).orElse("unknown"),
+//                    node.getNodeId()
+//                );
 
                 results.add(value);
             } else {
