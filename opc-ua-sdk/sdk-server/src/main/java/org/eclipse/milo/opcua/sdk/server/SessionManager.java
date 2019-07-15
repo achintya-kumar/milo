@@ -237,7 +237,7 @@ public class SessionManager implements
                 server.getConfig().getCertificateValidator();
 
             certificateValidator.validate(clientCertificate);
-            certificateValidator.verifyTrustChain(clientCertificateChain);
+            // certificateValidator.verifyTrustChain(clientCertificateChain);
         }
 
         // SignatureData must be created using only the bytes of the client
