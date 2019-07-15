@@ -10,20 +10,6 @@
 
 package org.eclipse.milo.examples.server;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
 import com.google.common.collect.Sets;
 import org.eclipse.milo.opcua.sdk.server.util.HostnameUtil;
 import org.eclipse.milo.opcua.stack.core.util.SelfSignedCertificateBuilder;
@@ -31,13 +17,20 @@ import org.eclipse.milo.opcua.stack.core.util.SelfSignedCertificateGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.security.*;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
 class KeyStoreLoader {
 
     private static final Pattern IP_ADDR_PATTERN = Pattern.compile(
-        "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
-
-    private static final String SERVER_ALIAS = "server-ai";
-    private static final char[] PASSWORD = "password".toCharArray();
+            "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -45,10 +38,22 @@ class KeyStoreLoader {
     private X509Certificate serverCertificate;
     private KeyPair serverKeyPair;
 
+    // Server-specific KeyStoreLoader customizations
+    private static String commonName = "Eclipse Milo Example Server";
+    private static String organization ="digitalpetri";
+    private static String organizationalUnit ="dev";
+    private static String locality = "Folsom";
+    private static String state ="CA";
+    private static String countryCode ="US";
+    private static String applicationUri = "urn:eclipse:milo:examples:server:" + UUID.randomUUID();
+
+    private static final String SERVER_ALIAS = "server-ai";
+    private static final char[] PASSWORD = "umati9816760959@".toCharArray();
+
     KeyStoreLoader load(File baseDir) throws Exception {
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
 
-        File serverKeyStore = baseDir.toPath().resolve("example-server.pfx").toFile();
+        File serverKeyStore = baseDir.toPath().resolve("UT-UMATI-server.pfx").toFile();
 
         logger.info("Loading KeyStore at {}", serverKeyStore);
 
@@ -57,21 +62,19 @@ class KeyStoreLoader {
 
             KeyPair keyPair = SelfSignedCertificateGenerator.generateRsaKeyPair(2048);
 
-            String applicationUri = "urn:eclipse:milo:examples:server:" + UUID.randomUUID();
-
             SelfSignedCertificateBuilder builder = new SelfSignedCertificateBuilder(keyPair)
-                .setCommonName("Eclipse Milo Example Server")
-                .setOrganization("digitalpetri")
-                .setOrganizationalUnit("dev")
-                .setLocalityName("Folsom")
-                .setStateName("CA")
-                .setCountryCode("US")
-                .setApplicationUri(applicationUri);
+                    .setCommonName(commonName)
+                    .setOrganization(organization)
+                    .setOrganizationalUnit(organizationalUnit)
+                    .setLocalityName(locality)
+                    .setStateName(state)
+                    .setCountryCode(countryCode)
+                    .setApplicationUri(applicationUri);
 
             // Get as many hostnames and IP addresses as we can listed in the certificate.
             Set<String> hostnames = Sets.union(
-                Sets.newHashSet(HostnameUtil.getHostname()),
-                HostnameUtil.getHostnames("0.0.0.0", false)
+                    Sets.newHashSet(HostnameUtil.getHostname()),
+                    HostnameUtil.getHostnames("0.0.0.0", false)
             );
 
             for (String hostname : hostnames) {
@@ -95,8 +98,8 @@ class KeyStoreLoader {
             serverCertificate = (X509Certificate) keyStore.getCertificate(SERVER_ALIAS);
 
             serverCertificateChain = Arrays.stream(keyStore.getCertificateChain(SERVER_ALIAS))
-                .map(X509Certificate.class::cast)
-                .toArray(X509Certificate[]::new);
+                    .map(X509Certificate.class::cast)
+                    .toArray(X509Certificate[]::new);
 
             PublicKey serverPublicKey = serverCertificate.getPublicKey();
             serverKeyPair = new KeyPair(serverPublicKey, (PrivateKey) serverPrivateKey);
@@ -117,4 +120,13 @@ class KeyStoreLoader {
         return serverKeyPair;
     }
 
+    public static void customize(String commonName, String organization, String organizationalUnit,
+                                 String state, String countryCode, String applicationUri) {
+        KeyStoreLoader.commonName = commonName;
+        KeyStoreLoader.organization = organization;
+        KeyStoreLoader.organizationalUnit = organizationalUnit;
+        KeyStoreLoader.state = state;
+        KeyStoreLoader.countryCode = countryCode;
+        KeyStoreLoader.applicationUri = applicationUri;
+    }
 }
