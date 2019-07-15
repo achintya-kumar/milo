@@ -10,6 +10,7 @@
 
 package org.eclipse.milo.opcua.stack.core.types.builtin;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,7 +26,7 @@ import org.eclipse.milo.opcua.stack.core.util.TypeUtil;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-public final class Variant {
+public final class Variant implements Serializable {
 
     public static final Variant NULL_VALUE = new Variant(null);
 

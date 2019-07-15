@@ -10,6 +10,7 @@
 
 package org.eclipse.milo.opcua.stack.core.util;
 
+import java.io.Serializable;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 
@@ -18,7 +19,7 @@ import javax.annotation.Nonnull;
  *
  * @param <T> the type of value computed and held.
  */
-public final class Lazy<T> {
+public final class Lazy<T> implements Serializable {
 
     private static final Object LAZY_NULL = new Object();
 

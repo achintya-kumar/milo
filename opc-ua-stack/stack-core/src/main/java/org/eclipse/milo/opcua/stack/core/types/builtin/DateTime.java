@@ -10,12 +10,13 @@
 
 package org.eclipse.milo.opcua.stack.core.types.builtin;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.Date;
 
 import com.google.common.base.MoreObjects;
 
-public final class DateTime {
+public final class DateTime implements Serializable {
 
     public static final DateTime MIN_VALUE = new DateTime(0L);
 

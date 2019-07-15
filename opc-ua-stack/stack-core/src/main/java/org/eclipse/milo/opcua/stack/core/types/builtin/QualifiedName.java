@@ -18,12 +18,14 @@ import com.google.common.base.Preconditions;
 import org.eclipse.milo.opcua.stack.core.NamespaceTable;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 
+import java.io.Serializable;
+
 import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.ushort;
 
 /**
  * This Built-in DataType contains a qualified name. It is, for example, used as BrowseName.
  */
-public final class QualifiedName {
+public final class QualifiedName implements Serializable {
 
     public static final QualifiedName NULL_VALUE = new QualifiedName(ushort(0), null);
 

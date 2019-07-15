@@ -12,7 +12,9 @@ package org.eclipse.milo.opcua.stack.core.types.builtin;
 
 import com.google.common.base.MoreObjects;
 
-public final class XmlElement {
+import java.io.Serializable;
+
+public final class XmlElement implements Serializable {
 
     private final String fragment;
 

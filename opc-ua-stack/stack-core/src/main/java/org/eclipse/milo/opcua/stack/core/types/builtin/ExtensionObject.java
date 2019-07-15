@@ -27,7 +27,9 @@ import org.eclipse.milo.opcua.stack.core.types.OpcUaDefaultBinaryEncoding;
 import org.eclipse.milo.opcua.stack.core.types.OpcUaDefaultXmlEncoding;
 import org.eclipse.milo.opcua.stack.core.util.Lazy;
 
-public final class ExtensionObject {
+import java.io.Serializable;
+
+public final class ExtensionObject implements Serializable {
 
     public enum BodyType {
         ByteString,

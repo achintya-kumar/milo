@@ -11,6 +11,7 @@
 package org.eclipse.milo.opcua.stack.core.types.builtin.unsigned;
 
 import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.math.BigInteger;
 import javax.annotation.Nonnull;
 
@@ -21,7 +22,7 @@ import javax.annotation.Nonnull;
  * @author Ed Schaller
  * @author Jens Nerche
  */
-public final class UByte extends UNumber implements Comparable<UByte> {
+public final class UByte extends UNumber implements Comparable<UByte>, Serializable {
 
     /**
      * Generated UID

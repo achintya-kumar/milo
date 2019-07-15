@@ -10,6 +10,7 @@
 
 package org.eclipse.milo.opcua.stack.core.types.builtin.unsigned;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 
 /**
@@ -21,7 +22,7 @@ import java.math.BigInteger;
  *
  * @author Lukas Eder
  */
-public final class Unsigned {
+public final class Unsigned implements Serializable {
 
     /**
      * Create an <code>unsigned byte</code>

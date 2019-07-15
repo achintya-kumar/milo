@@ -10,6 +10,7 @@
 
 package org.eclipse.milo.opcua.stack.core.types.builtin.unsigned;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 
 /**
@@ -17,7 +18,7 @@ import java.math.BigInteger;
  *
  * @author Lukas Eder
  */
-public abstract class UNumber extends Number {
+public abstract class UNumber extends Number implements Serializable {
 
     /**
      * Generated UID

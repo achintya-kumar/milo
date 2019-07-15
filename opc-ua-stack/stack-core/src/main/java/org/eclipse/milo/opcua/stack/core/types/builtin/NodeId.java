@@ -10,6 +10,7 @@
 
 package org.eclipse.milo.opcua.stack.core.types.builtin;
 
+import java.io.Serializable;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -29,7 +30,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.uint;
 import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.ushort;
 
-public final class NodeId {
+public final class NodeId implements Serializable {
 
     public static final NodeId NULL_NUMERIC = new NodeId(ushort(0), uint(0));
     public static final NodeId NULL_STRING = new NodeId(ushort(0), "");

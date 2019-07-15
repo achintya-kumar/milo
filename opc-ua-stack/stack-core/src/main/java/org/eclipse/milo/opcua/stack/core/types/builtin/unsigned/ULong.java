@@ -10,6 +10,7 @@
 
 package org.eclipse.milo.opcua.stack.core.types.builtin.unsigned;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import javax.annotation.Nonnull;
 
@@ -20,7 +21,7 @@ import javax.annotation.Nonnull;
  * @author Jens Nerche
  * @author Ivan Sokolov
  */
-public final class ULong extends UNumber implements Comparable<ULong> {
+public final class ULong extends UNumber implements Comparable<ULong>, Serializable {
 
     /**
      * Generated UID

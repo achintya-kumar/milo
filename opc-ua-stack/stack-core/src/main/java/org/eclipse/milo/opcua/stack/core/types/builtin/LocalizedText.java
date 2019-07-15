@@ -10,12 +10,13 @@
 
 package org.eclipse.milo.opcua.stack.core.types.builtin;
 
+import java.io.Serializable;
 import java.util.Locale;
 import javax.annotation.Nullable;
 
 import com.google.common.base.MoreObjects;
 
-public final class LocalizedText {
+public final class LocalizedText implements Serializable {
 
     public static final LocalizedText NULL_VALUE = new LocalizedText(null, null);
 

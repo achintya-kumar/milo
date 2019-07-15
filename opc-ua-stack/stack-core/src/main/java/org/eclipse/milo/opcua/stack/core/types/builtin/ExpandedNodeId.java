@@ -10,6 +10,7 @@
 
 package org.eclipse.milo.opcua.stack.core.types.builtin;
 
+import java.io.Serializable;
 import java.util.Optional;
 import java.util.UUID;
 import javax.xml.bind.DatatypeConverter;
@@ -29,7 +30,7 @@ import org.eclipse.milo.opcua.stack.core.types.enumerated.IdType;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class ExpandedNodeId {
+public final class ExpandedNodeId implements Serializable {
 
     public static final ExpandedNodeId NULL_VALUE = new ExpandedNodeId(NodeId.NULL_VALUE, null, 0);
 

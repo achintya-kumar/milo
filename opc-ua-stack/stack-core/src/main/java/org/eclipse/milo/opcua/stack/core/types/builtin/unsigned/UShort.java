@@ -11,6 +11,7 @@
 package org.eclipse.milo.opcua.stack.core.types.builtin.unsigned;
 
 import javax.annotation.Nonnull;
+import java.io.Serializable;
 
 /**
  * The <code>unsigned short</code> type
@@ -18,7 +19,7 @@ import javax.annotation.Nonnull;
  * @author Lukas Eder
  * @author Jens Nerche
  */
-public final class UShort extends UNumber implements Comparable<UShort> {
+public final class UShort extends UNumber implements Comparable<UShort>, Serializable {
 
     /**
      * Generated UID

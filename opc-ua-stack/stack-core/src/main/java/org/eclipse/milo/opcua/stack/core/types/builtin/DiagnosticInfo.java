@@ -10,13 +10,14 @@
 
 package org.eclipse.milo.opcua.stack.core.types.builtin;
 
+import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
 /**
  * Vendor-specific diagnostic information
  */
-public final class DiagnosticInfo {
+public final class DiagnosticInfo implements Serializable {
 
     public static final DiagnosticInfo NULL_VALUE = new DiagnosticInfo(-1, -1, -1, -1, null, null, null);
 

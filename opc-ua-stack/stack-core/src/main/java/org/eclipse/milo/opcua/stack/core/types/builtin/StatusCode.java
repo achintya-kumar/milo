@@ -15,7 +15,9 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 
-public final class StatusCode {
+import java.io.Serializable;
+
+public final class StatusCode implements Serializable {
 
     private static final long SEVERITY_MASK = 0xC0000000L;
     private static final long SEVERITY_GOOD = 0x00000000L;

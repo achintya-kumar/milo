@@ -11,6 +11,7 @@
 package org.eclipse.milo.opcua.stack.core.types.builtin.unsigned;
 
 import java.io.ObjectStreamException;
+import java.io.Serializable;
 import javax.annotation.Nonnull;
 
 /**
@@ -20,7 +21,7 @@ import javax.annotation.Nonnull;
  * @author Ed Schaller
  * @author Jens Nerche
  */
-public final class UInteger extends UNumber implements Comparable<UInteger> {
+public final class UInteger extends UNumber implements Comparable<UInteger>, Serializable {
     private static final Class<UInteger> CLASS = UInteger.class;
     private static final String CLASS_NAME = CLASS.getName();
 
